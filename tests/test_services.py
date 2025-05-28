@@ -12,7 +12,7 @@ def test_save_search_with_authenticated_user(user):
 
 @pytest.mark.django_db
 def test_save_search_with_session_key():
-    WeatherService.save_search(user=None, city="Париж", session_key="abc123")
+    WeatherService.save_search(user=None, city_name="Париж", session_key="abc123")
     assert SearchHistory.objects.filter(session_key="abc123", city="Париж").exists()
 
 
@@ -26,6 +26,7 @@ def test_get_weather_data_success(mock_get):
         "main": {"temp": 10, "feels_like": 8, "pressure": 1012, "humidity": 60},
         "weather": [{"description": "ясно", "icon": "01d"}],
         "wind": {"speed": 4},
+        "id": 2643743,
     }
 
     data, status = WeatherService.get_weather_data_by_city_name("Лондон")
