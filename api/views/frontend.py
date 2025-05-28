@@ -7,11 +7,8 @@ from frontend.forms import RegisterForm
 
 
 def index(request):
-    city = request.GET.get("city")
-
-    if not city:
-        messages.error(request, "Введите название города.")
-        return render(request, "index.html")
+    city_name = request.GET.get("city")
+    city_id = request.GET.get("geonameid")
 
     weather_data = None
     session_key = request.session.session_key
@@ -22,12 +19,12 @@ def index(request):
     last_city = WeatherService.get_last_city(request.user, session_key)
     show_last_city_hint = False
 
-    if not request.session.get("shown_last_city_hint") and last_city and not city:
+    if not request.session.get("shown_last_city_hint") and last_city and not city_name:
         show_last_city_hint = True
         request.session["shown_last_city_hint"] = True
 
-    if city:
-        weather_data, status_code = WeatherService.get_weather_data(city)
+    if city_name or city_id:
+        weather_data, status_code = WeatherService.get_weather_data(city_name=city_name, city_id=city_id)
         if weather_data and status_code == 200:
             WeatherService.save_search(request.user, weather_data["city"], session_key)
         elif status_code == 404:

@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
 
 from django.contrib.auth.views import LoginView, LogoutView
 
-from api.views.weather import WeatherView, UserSearchHistoryView, CityStatView
+from api.views.weather import WeatherView, UserSearchHistoryView, CityStatView, autocomplete_city
 from api.views.frontend import register_view
 
 
@@ -23,6 +23,7 @@ urlpatterns = [
     path("weather/", WeatherView.as_view(), name="weather"),
     path("history/", UserSearchHistoryView.as_view(), name="user-history"),
     path("stats/", CityStatView.as_view(), name="city-stats"),
+    path("autocomplete-city/", autocomplete_city, name="autocomplete_city"),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path(

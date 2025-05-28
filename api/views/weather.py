@@ -6,7 +6,10 @@ from rest_framework.generics import ListAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from weather.models import SearchHistory, CityStat
+from django.http import JsonResponse
+from django.db.models import Q
+
+from weather.models import SearchHistory, CityStat, City
 from api.serializers.weather import SearchHistorySerializer, CityStatSerializer
 
 from weather.services import WeatherService
@@ -55,3 +58,28 @@ class UserSearchHistoryView(ListAPIView):
 class CityStatView(ListAPIView):
     queryset = CityStat.objects.order_by("-count")
     serializer_class = CityStatSerializer
+
+
+def autocomplete_city(request):
+    query = request.GET.get("q", "").strip()
+    if not query:
+        return JsonResponse([], safe=False)
+
+    cities = (
+        City.objects.filter(
+            Q(name__icontains=query) | Q(alternatenames__icontains=query)
+        )
+        .order_by("-population")
+        .distinct()[:10]
+    )
+
+    results = [
+        {
+            "id": city.geonameid,
+            "label": f"{city.name}, {city.country_code} ({city.timezone})",
+            "value": city.name,
+        }
+        for city in cities
+    ]
+
+    return JsonResponse(results, safe=False)

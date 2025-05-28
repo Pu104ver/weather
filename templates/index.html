@@ -3,6 +3,30 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 {% block content %}
+<style>
+    .suggestions {
+        border: 1px solid #ccc;
+        position: absolute;
+        background: white;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+    }
+
+    .suggestions li {
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .suggestions li:hover {
+        background-color: #eee;
+    }
+</style>
+
 <h2>Прогноз погоды</h2>
 <div class="container mt-4">
     <div class="row">
@@ -12,7 +36,7 @@
             <ul class="list-group">
                 {% for item in history %}
                 <li class="list-group-item">
-                    <a href="?city={{ item.city }}">{{ item.city }}</a>
+                    <a href="?city={{ item.geonameid }}">{{ item.city }}</a>
                     <br>
                     <small class="text-muted">{{ item.searched_at|date:"d.m.Y H:i" }}</small>
                 </li>
@@ -24,12 +48,13 @@
 
         <!-- Основной контент -->
         <div class="col-md-9">
-            <form method="get" action=".">
-                <div class="input-group mb-3">
-                    <input type="text" name="city" class="form-control" placeholder="Введите город">
-                    <button class="btn btn-primary" type="submit">Показать погоду</button>
-                </div>
+            <form method="get" action="{% url 'index' %}">
+                <input type="text" id="city-input" name="city" autocomplete="off" placeholder="Введите город..." />
+                <input type="hidden" name="geonameid" id="geonameid-hidden" />
+                <ul id="suggestions" class="suggestions"></ul>
+                <button type="submit">Показать погоду</button>
             </form>
+
 
             {% if weather %}
             <div class="card">
@@ -43,7 +68,7 @@
                     <p>Давление: {{ weather.pressure }} гПа</p>
                 </div>
             </div>
-            
+
             {% elif last_city and not weather %}
             <div class="alert alert-info">
                 Вы в прошлый раз интересовались погодой в городе <strong>{{ last_city }}</strong>.
@@ -57,4 +82,42 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const input = document.getElementById("city-input");
+        const suggestions = document.getElementById("suggestions");
+
+        input.addEventListener("input", function () {
+            const query = input.value;
+            if (query.length < 2) {
+                suggestions.innerHTML = "";
+                return;
+            }
+
+            fetch(`/api/autocomplete-city/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestions.innerHTML = "";
+                    data.forEach(item => {
+                        const li = document.createElement("li");
+                        li.textContent = item.label;
+                        li.addEventListener("click", function () {
+                            input.value = item.value;
+                            document.getElementById("geonameid-hidden").value = item.id;
+                            suggestions.innerHTML = "";
+                        });
+                        suggestions.appendChild(li);
+                    });
+                });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!suggestions.contains(e.target) && e.target !== input) {
+                suggestions.innerHTML = "";
+            }
+        });
+    });
+</script>
+
 {% endblock %}

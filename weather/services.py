@@ -14,8 +14,14 @@ WEATHER_API_KEY = os.getenv("WEATHER_API_KEY")
 
 class WeatherService:
     @staticmethod
-    def get_weather_data(city):
-        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&lang=ru&units=metric"
+    def get_weather_data(city_name=None, city_id=None):
+        print(city_name, city_id)
+        if city_id:
+            url = f"https://api.openweathermap.org/data/2.5/weather?id={city_id}&appid={WEATHER_API_KEY}&lang=ru&units=metric"
+        elif city_name:
+            url = f"https://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={WEATHER_API_KEY}&lang=ru&units=metric"
+        else:
+            return None, 400
 
         try:
             response = requests.get(url, timeout=5)
@@ -29,7 +35,11 @@ class WeatherService:
                 "country": data["sys"].get("country"),
                 "temp": data["main"].get("temp"),
                 "feels_like": data["main"].get("feels_like"),
-                "description": data["weather"][0].get("description") if data.get("weather") else None,
+                "description": (
+                    data["weather"][0].get("description")
+                    if data.get("weather")
+                    else None
+                ),
                 "icon": data["weather"][0].get("icon") if data.get("weather") else None,
                 "wind_speed": data["wind"].get("speed"),
                 "pressure": data["main"].get("pressure"),
@@ -47,7 +57,6 @@ class WeatherService:
         except (KeyError, TypeError, ValueError):
             return None, 500
 
-
     @staticmethod
     def get_user_filter(user: User, session_key=None):
         if user.is_authenticated:
@@ -58,7 +67,9 @@ class WeatherService:
     def save_search(user: User, city, session_key=None):
         filter_kwargs = {}
         if user is not None and user.is_authenticated:
-            SearchHistory.objects.filter(user__isnull=True, session_key=session_key).update(user=user)
+            SearchHistory.objects.filter(
+                user__isnull=True, session_key=session_key
+            ).update(user=user)
             filter_kwargs["user"] = user
         else:
             filter_kwargs["session_key"] = session_key
@@ -75,6 +86,7 @@ class WeatherService:
 
     @staticmethod
     def get_unique_history(user, session_key=None):
+        print(user)
         user_filter = WeatherService.get_user_filter(user, session_key)
         latest = (
             SearchHistory.objects.filter(user_filter)
