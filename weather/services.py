@@ -57,7 +57,7 @@ class WeatherService:
     @staticmethod
     def save_search(user: User, city, session_key=None):
         filter_kwargs = {}
-        if user.is_authenticated:
+        if user is not None and user.is_authenticated:
             SearchHistory.objects.filter(user__isnull=True, session_key=session_key).update(user=user)
             filter_kwargs["user"] = user
         else:
