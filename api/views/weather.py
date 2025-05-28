@@ -40,7 +40,7 @@ class WeatherView(APIView):
                 session_key=request.session.session_key, city=city
             )
 
-        data, status = WeatherService.get_weather_data(city)
+        data, status = WeatherService.get_weather_data_by_city_name(city)
 
         return Response(data, status=status)
 

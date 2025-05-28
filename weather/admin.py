@@ -26,7 +26,7 @@ class CityAdmin(admin.ModelAdmin):
         "latitude",
         "longitude",
     )
-    search_fields = ("name", "asciiname", "alternatenames", "country_code")
+    search_fields = ("geonameid", "name", "asciiname", "alternatenames", "country_code")
     list_filter = ("country_code",)
     ordering = ("-population", "name")
     readonly_fields = ("geonameid",)

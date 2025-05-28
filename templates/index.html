@@ -36,7 +36,7 @@
             <ul class="list-group">
                 {% for item in history %}
                 <li class="list-group-item">
-                    <a href="?city={{ item.geonameid }}">{{ item.city }}</a>
+                    <a href="?city_id={{ item.city_id }}">{{ item.city }}</a>
                     <br>
                     <small class="text-muted">{{ item.searched_at|date:"d.m.Y H:i" }}</small>
                 </li>
@@ -50,7 +50,7 @@
         <div class="col-md-9">
             <form method="get" action="{% url 'index' %}">
                 <input type="text" id="city-input" name="city" autocomplete="off" placeholder="Введите город..." />
-                <input type="hidden" name="geonameid" id="geonameid-hidden" />
+                <input type="hidden" name="city_id" id="geonameid-hidden" />
                 <ul id="suggestions" class="suggestions"></ul>
                 <button type="submit">Показать погоду</button>
             </form>
@@ -71,8 +71,8 @@
 
             {% elif last_city and not weather %}
             <div class="alert alert-info">
-                Вы в прошлый раз интересовались погодой в городе <strong>{{ last_city }}</strong>.
-                <a href="?city={{ last_city }}" class="btn btn-sm btn-outline-primary">Показать</a>
+                В прошлый раз вы интересовались погодой в городе <strong>{{ last_city.city }}</strong>.
+                <a href="?city_id={{ last_city.city_id }}" class="btn btn-sm btn-outline-primary">Показать</a>
             </div>
             {% endif %}
 

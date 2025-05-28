@@ -28,7 +28,7 @@ def test_get_weather_data_success(mock_get):
         "wind": {"speed": 4},
     }
 
-    data, status = WeatherService.get_weather_data("Лондон")
+    data, status = WeatherService.get_weather_data_by_city_name("Лондон")
     assert status == 200
     assert data["city"] == "Лондон"
     assert CityStat.objects.filter(city="Лондон").exists()
@@ -40,6 +40,6 @@ def test_get_weather_data_failure(mock_get):
     mock_get.return_value.status_code = 404
     mock_get.return_value.json.return_value = {"message": "city not found"}
 
-    data, status = WeatherService.get_weather_data("Неизвестный")
+    data, status = WeatherService.get_weather_data_by_city_name("Неизвестный")
     assert status == 404
     assert data is None

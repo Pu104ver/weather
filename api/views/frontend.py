@@ -8,9 +8,11 @@ from frontend.forms import RegisterForm
 
 def index(request):
     city_name = request.GET.get("city")
-    city_id = request.GET.get("geonameid")
+    city_id = request.GET.get("city_id")
 
     weather_data = None
+    status_code = None
+    
     session_key = request.session.session_key
     if not session_key:
         request.session.save()
@@ -23,16 +25,23 @@ def index(request):
         show_last_city_hint = True
         request.session["shown_last_city_hint"] = True
 
-    if city_name or city_id:
-        weather_data, status_code = WeatherService.get_weather_data(city_name=city_name, city_id=city_id)
-        if weather_data and status_code == 200:
-            WeatherService.save_search(request.user, weather_data["city"], session_key)
-        elif status_code == 404:
-            messages.error(request, "Город не найден.")
-        elif status_code == 503:
-            messages.error(request, "Ошибка соединения с погодным сервером.")
-        else:
-            messages.error(request, "Не удалось получить данные о погоде.")
+    if city_name and not city_id:
+        weather_data, status_code = WeatherService.get_weather_data_by_city_name(
+            city_name=city_name
+        )
+    if city_id:
+        weather_data, status_code = WeatherService.get_weather_data_by_city_id(
+            city_id=city_id
+        )
+    if weather_data and status_code == 200:
+        WeatherService.save_search(
+            request.user, weather_data["city"], weather_data["id"], session_key
+        )
+    elif status_code == 404:
+        messages.error(request, "Город не найден.")
+    elif status_code is not None:
+        messages.error(request, f"Произошла ошибка. Код: {status_code}")
+     
 
     unique_history = WeatherService.get_unique_history(request.user, session_key)
 

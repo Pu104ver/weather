@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 
 @pytest.mark.django_db
-@patch("weather.services.WeatherService.get_weather_data")
+@patch("weather.services.WeatherService.get_weather_data_by_city_name")
 def test_index_view_get_weather(mock_get_weather_data, client, user):
     mock_get_weather_data.return_value = (
         {
