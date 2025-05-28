@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block head %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock %}
+{% block content %}
+<h2>Прогноз погоды</h2>
+<div class="container mt-4">
+    <div class="row">
+        <!-- Левая колонка с историей -->
+        <div class="col-md-3">
+            <h5>История поиска</h5>
+            <ul class="list-group">
+                {% for item in history %}
+                <li class="list-group-item">
+                    <a href="?city={{ item.city }}">{{ item.city }}</a>
+                    <br>
+                    <small class="text-muted">{{ item.searched_at|date:"d.m.Y H:i" }}</small>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">Пока пусто</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="col-md-9">
+            <form method="get" action=".">
+                <div class="input-group mb-3">
+                    <input type="text" name="city" class="form-control" placeholder="Введите город">
+                    <button class="btn btn-primary" type="submit">Показать погоду</button>
+                </div>
+            </form>
+
+            {% if weather %}
+            <div class="card">
+                <div class="card-body">
+                    <h4>{{ weather.city }}, {{ weather.country }}</h4>
+                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png" alt="иконка">
+                    <p><strong>{{ weather.description }}</strong></p>
+                    <p>Температура: {{ weather.temp }}°C (ощущается как {{ weather.feels_like }}°C)</p>
+                    <p>Ветер: {{ weather.wind_speed }} м/с</p>
+                    <p>Влажность: {{ weather.humidity }}%</p>
+                    <p>Давление: {{ weather.pressure }} гПа</p>
+                </div>
+            </div>
+            
+            {% elif last_city and not weather %}
+            <div class="alert alert-info">
+                Вы в прошлый раз интересовались погодой в городе <strong>{{ last_city }}</strong>.
+                <a href="?city={{ last_city }}" class="btn btn-sm btn-outline-primary">Показать</a>
+            </div>
+            {% endif %}
+
+            {% for message in messages %}
+            <div class="alert alert-warning mt-3">{{ message }}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
